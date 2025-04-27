@@ -48,22 +48,37 @@ SubmitButton.MouseButton1Click:Connect(function()
     if TextBox.Text == key then
         KeyFrame.Visible = false
         -- Criar a aba principal do menu
-        local Tab = Window:MakeTab({
-            Name = "Recursos",
+        local TabHome = Window:MakeTab({
+            Name = "Home",
             Icon = "rbxassetid://4483345998",
             PremiumOnly = false
         })
 
-        local Section = Tab:AddSection({
+        -- Adicionar categoria Home
+        TabHome:AddButton({
+            Name = "Bem-vindo ao Ceifador Hub!",
+            Callback = function()
+                print("Bem-vindo ao Ceifador Hub V3!")
+            end
+        })
+
+        -- Criar aba de Scripts
+        local TabScripts = Window:MakeTab({
+            Name = "Scripts",
+            Icon = "rbxassetid://4483345998",
+            PremiumOnly = false
+        })
+
+        -- Adicionar categoria de Scripts
+        local Section = TabScripts:AddSection({
             Name = "Ferramentas"
         })
 
-        -- Adicionar botões com funcionalidades
         Section:AddButton({
             Name = "Ativar Aimbot",
             Callback = function()
                 print("Aimbot ativado!")
-                -- Aqui você pode adicionar o código para ativar o Aimbot
+                -- Ação de ativar o Aimbot (substitua com seu código específico de Aimbot)
             end
         })
 
@@ -71,7 +86,7 @@ SubmitButton.MouseButton1Click:Connect(function()
             Name = "Ativar ESP",
             Callback = function()
                 print("ESP ativado!")
-                -- Aqui você pode adicionar o código para ativar o ESP
+                -- Ação de ativar o ESP (substitua com seu código específico de ESP)
             end
         })
 
@@ -79,7 +94,7 @@ SubmitButton.MouseButton1Click:Connect(function()
             Name = "Ativar Silent Aim",
             Callback = function()
                 print("Silent Aim ativado!")
-                -- Aqui você pode adicionar o código para ativar o Silent Aim
+                -- Ação de ativar o Silent Aim (substitua com seu código específico de Silent Aim)
             end
         })
 
@@ -87,11 +102,11 @@ SubmitButton.MouseButton1Click:Connect(function()
             Name = "Ativar Wallhack",
             Callback = function()
                 print("Wallhack ativado!")
-                -- Aqui você pode adicionar o código para ativar o Wallhack
+                -- Ação de ativar o Wallhack (substitua com seu código específico de Wallhack)
             end
         })
 
-        -- Exibir a janela do menu hub
+        -- Mostrar a janela
         Window:Show()
     else
         TextBox.Text = ""
