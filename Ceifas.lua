@@ -150,4 +150,71 @@ local Window = OrionLib:MakeWindow({
 -- Criar a aba principal do menu
 local Tab = Window:MakeTab({
     Name = "Menu",
-    Icon
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+    Name = "Recursos"
+})
+
+-- Adicionar os botões ao menu
+Section:AddButton({
+    Name = "Ativar Aimbot",
+    Callback = function()
+        AIMBOT_ENABLED = not AIMBOT_ENABLED
+        OrionLib:MakeNotification({
+            Name = "Aimbot",
+            Content = AIMBOT_ENABLED and "Aimbot Ativado" or "Aimbot Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar ESP",
+    Callback = function()
+        ESP_ENABLED = not ESP_ENABLED
+        OrionLib:MakeNotification({
+            Name = "ESP",
+            Content = ESP_ENABLED and "ESP Ativado" or "ESP Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Silent Aim",
+    Callback = function()
+        shooting = not shooting
+        OrionLib:MakeNotification({
+            Name = "Silent Aim",
+            Content = shooting and "Silent Aim Ativado" or "Silent Aim Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Wallhack (NoClip)",
+    Callback = function()
+        noclip = not noclip
+        OrionLib:MakeNotification({
+            Name = "Wallhack",
+            Content = noclip and "Wallhack Ativado" or "Wallhack Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Auto Shoot",
+    Callback = function()
+        AUTO_SHOOT = not AUTO_SHOOT
+        OrionLib:MakeNotification({
+            Name = "Auto Shoot",
+            Content = AUTO_SHOOT and "Auto Shoot Ativado" or "Auto Shoot Desativado",
+            Time = 3
+        })
+    end
+})
