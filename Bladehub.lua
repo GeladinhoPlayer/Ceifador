@@ -1,16 +1,60 @@
+-- Carregar Orion UI
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
+
 -- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Ball = workspace:WaitForChild("BladeBall")  -- A bola do Blade Ball (crie um objeto 'BladeBall' no Workspace)
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
+local Ball = workspace:WaitForChild("BladeBall") -- A bola do BladeBall (Crie um objeto 'BladeBall' no Workspace)
 local swordEquipped = false
 
--- Variáveis de movimento da bola
+-- Variáveis
+local AIMBOT_ENABLED = false
+local ESP_ENABLED = false
+local SILENT_AIM = false
+local NOCLIP = false
+local ESP_OBJECTS = {}
+local ESP_COLOR = Color3.fromRGB(255, 0, 0)
+local FOV_RADIUS = 100
+local FOV_CIRCLE = nil
 local ballVelocity = Vector3.new(0, 0, 0)
 local ballSpeed = 50
 
--- Função para equipar/descarregar a espada
+-- Funções
+local function getClosestPlayer()
+    local closest, shortestDistance = nil, math.huge
+    local mouse = LocalPlayer:GetMouse()
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local pos = Camera:WorldToViewportPoint(player.Character.Head.Position)
+            local distance = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+            if distance < shortestDistance then
+                closest = player
+                shortestDistance = distance
+            end
+        end
+    end
+    return closest
+end
+
+local function createESP(player)
+    local box = Drawing.new("Square")
+    box.Color = ESP_COLOR
+    box.Thickness = 2
+    box.Transparency = 1
+    box.Filled = false
+    ESP_OBJECTS[player] = box
+end
+
+local function removeESP(player)
+    if ESP_OBJECTS[player] then
+        ESP_OBJECTS[player]:Remove()
+        ESP_OBJECTS[player] = nil
+    end
+end
+
 local function toggleSword()
     if swordEquipped then
         -- Desaparecer espada
@@ -25,7 +69,6 @@ local function toggleSword()
     end
 end
 
--- Função para chutar a bola
 local function kickBall()
     if swordEquipped and Ball then
         -- Acionar o movimento da bola com a espada
@@ -48,11 +91,56 @@ end
 -- Loop de atualização para a bola
 RunService.RenderStepped:Connect(function()
     updateBall()
+
+    -- Aimbot
+    if AIMBOT_ENABLED and SILENT_AIM then
+        local target = getClosestPlayer()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            if target.Team ~= LocalPlayer.Team then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
+            end
+        end
+    end
+
+    -- ESP
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            if not ESP_OBJECTS[player] then
+                createESP(player)
+            end
+
+            local head = player.Character.Head
+            local pos, visible = Camera:WorldToViewportPoint(head.Position)
+            local size = (Camera:WorldToViewportPoint(head.Position + Vector3.new(2, 3, 0)) - Camera:WorldToViewportPoint(head.Position - Vector3.new(2, 3, 0))).Magnitude
+            local box = ESP_OBJECTS[player]
+            box.Size = Vector2.new(size, size * 1.5)
+            box.Position = Vector2.new(pos.X - box.Size.X/2, pos.Y - box.Size.Y/2)
+            box.Color = ESP_COLOR
+            box.Visible = ESP_ENABLED and visible
+        else
+            removeESP(player)
+        end
+    end
+
+    -- FOV Circle
+    if FOV_CIRCLE then
+        local mouse = LocalPlayer:GetMouse()
+        FOV_CIRCLE.Position = Vector2.new(mouse.X, mouse.Y)
+    end
 end)
 
--- Criar Janela de UI com Orion
-local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
+-- Noclip
+RunService.Stepped:Connect(function()
+    if NOCLIP and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
 
+-- Criar Janela Principal
 local Window = OrionLib:MakeWindow({
     Name = "BladeBall Hub",
     HidePremium = false,
@@ -136,7 +224,7 @@ PlayerTab:AddSlider({
     end
 })
 
--- Adicionando a Bola e a Arena no Workspace
+-- Adicionar a Bola e a Arena no Workspace
 local function createArena()
     -- Bola
     local ball = Instance.new("Part")
