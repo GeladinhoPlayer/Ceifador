@@ -1,14 +1,24 @@
--- Orion UI Setup
+-- Carregar a biblioteca OrionLib
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/OhYea9/Orion/main/OrionLib.lua"))()
-local Window = OrionLib:MakeWindow({Name = "GeladoHub | V3", HidePremium = false, SaveConfig = true, ConfigFolder = "GeladoHub"})
+if not OrionLib then
+    warn("OrionLib não pôde ser carregado corretamente!")
+    return
+end
 
--- Variables
+-- Criação da janela do menu
+local Window = OrionLib:MakeWindow({
+    Name = "GeladoHub | V3",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "GeladoHub"
+})
+
+-- Variáveis
 local noclip = false
 local aimbotEnabled = false
 local espEnabled = false
-local silentAimEnabled = false
 
--- Function to toggle NoClip
+-- Função para NoClip
 local function toggleNoClip()
     noclip = not noclip
     local character = game.Players.LocalPlayer.Character
@@ -17,46 +27,43 @@ local function toggleNoClip()
         if humanoid then
             humanoid.PlatformStand = noclip
         end
-        -- Handle walking through walls
+        -- Modificar CanCollide para atravessar paredes
         if noclip then
-            for _, v in pairs(character:GetChildren()) do
-                if v:IsA("Part") then
-                    v.CanCollide = false
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("Part") then
+                    part.CanCollide = false
                 end
             end
         else
-            for _, v in pairs(character:GetChildren()) do
-                if v:IsA("Part") then
-                    v.CanCollide = true
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("Part") then
+                    part.CanCollide = true
                 end
             end
         end
     end
 end
 
--- Function to handle Aimbot (simplified version)
+-- Função de Aimbot
 local function aimbot()
     local character = game.Players.LocalPlayer.Character
     if not character then return end
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
     
-    -- Basic aimbot logic (just for demonstration)
     if aimbotEnabled then
         for _, target in pairs(game.Players:GetPlayers()) do
             if target ~= game.Players.LocalPlayer then
-                local targetHumanoidRootPart = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
-                if targetHumanoidRootPart then
-                    -- Calculate the direction towards the target
-                    local direction = (targetHumanoidRootPart.Position - humanoidRootPart.Position).unit
-                    humanoidRootPart.CFrame = CFrame.lookAt(humanoidRootPart.Position, targetHumanoidRootPart.Position)
+                local targetHRP = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+                if targetHRP then
+                    humanoidRootPart.CFrame = CFrame.lookAt(humanoidRootPart.Position, targetHRP.Position)
                 end
             end
         end
     end
 end
 
--- ESP (Extra Sensory Perception) - Display enemy boxes
+-- Função para ESP
 local function esp()
     if espEnabled then
         for _, target in pairs(game.Players:GetPlayers()) do
@@ -66,7 +73,7 @@ local function esp()
                 box.Parent = targetHRP
                 box.Adornee = targetHRP
                 box.Size = Vector3.new(4, 6, 4)
-                box.Color3 = Color3.fromRGB(255, 0, 0) -- Red for enemies
+                box.Color3 = Color3.fromRGB(255, 0, 0) -- Cor vermelha para inimigos
                 box.Transparency = 0.5
                 box.AlwaysOnTop = true
                 box.ZIndex = 5
@@ -75,23 +82,7 @@ local function esp()
     end
 end
 
--- Silent Aim - Aimbot without visual aim lock
-local function silentAim()
-    if silentAimEnabled then
-        for _, target in pairs(game.Players:GetPlayers()) do
-            if target ~= game.Players.LocalPlayer and target.Character then
-                local targetHumanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-                if targetHumanoidRootPart then
-                    -- Here you can add your shooting logic (to make the gun shoot where the target is)
-                    -- Example: Fire bullet automatically when aiming at a target
-                    -- You'd need to connect it to your weapon's firing mechanism
-                end
-            end
-        end
-    end
-end
-
--- Orion UI Window Setup
+-- Criar a aba de "Home"
 local homeTab = Window:MakeTab({
     Name = "Home",
     Icon = "rbxassetid://5012544611",
@@ -101,17 +92,18 @@ local homeTab = Window:MakeTab({
 homeTab:AddParagraph("GeladoHub V3", "Criado por Geladinho")
 homeTab:AddParagraph("ID do Criador", "Geladinho#1234")
 
+-- Criar a aba de "Scripts"
 local scriptTab = Window:MakeTab({
     Name = "Scripts",
     Icon = "rbxassetid://5012544611",
     PremiumOnly = false
 })
 
--- Home Button Actions
+-- Botão para ativar NoClip
 scriptTab:AddButton({
     Name = "Ativar Wallhack (NoClip)",
     Callback = function()
-        print("Toggling NoClip")  -- Debug message
+        print("Toggling NoClip")
         toggleNoClip()
         OrionLib:MakeNotification({
             Name = "Wallhack",
@@ -121,11 +113,12 @@ scriptTab:AddButton({
     end
 })
 
+-- Botão para ativar Aimbot
 scriptTab:AddButton({
     Name = "Ativar Aimbot",
     Callback = function()
         aimbotEnabled = not aimbotEnabled
-        print("Aimbot Toggled: " .. tostring(aimbotEnabled))  -- Debug message
+        print("Aimbot Toggled: " .. tostring(aimbotEnabled))
         OrionLib:MakeNotification({
             Name = "Aimbot",
             Content = aimbotEnabled and "Aimbot Ativado" or "Aimbot Desativado",
@@ -134,34 +127,22 @@ scriptTab:AddButton({
     end
 })
 
+-- Botão para ativar ESP
 scriptTab:AddButton({
     Name = "Ativar ESP",
     Callback = function()
         espEnabled = not espEnabled
-        print("ESP Toggled: " .. tostring(espEnabled))  -- Debug message
+        print("ESP Toggled: " .. tostring(espEnabled))
         OrionLib:MakeNotification({
             Name = "ESP",
             Content = espEnabled and "ESP Ativado" or "ESP Desativado",
             Time = 3
         })
-        esp()  -- Run the ESP function
+        esp()
     end
 })
 
-scriptTab:AddButton({
-    Name = "Ativar Silent Aim",
-    Callback = function()
-        silentAimEnabled = not silentAimEnabled
-        print("Silent Aim Toggled: " .. tostring(silentAimEnabled))  -- Debug message
-        OrionLib:MakeNotification({
-            Name = "Silent Aim",
-            Content = silentAimEnabled and "Silent Aim Ativado" or "Silent Aim Desativado",
-            Time = 3
-        })
-    end
-})
-
--- Configurations (Create Configuration Tab)
+-- Criar a aba de "Configurações"
 local configTab = Window:MakeTab({
     Name = "Configurações",
     Icon = "rbxassetid://5012544611",
@@ -171,12 +152,11 @@ local configTab = Window:MakeTab({
 configTab:AddParagraph("Nome do Hub", "GeladoHub | V3")
 configTab:AddParagraph("Criador", "Geladinho#1234")
 
--- Refresh the menu and start listening for user actions
+-- Inicializar o menu
 OrionLib:Init()
 
--- Keep the aimbot, esp, and silent aim functions running in a loop
+-- Atualizar as funcionalidades continuamente
 game:GetService("RunService").RenderStepped:Connect(function()
-    -- Make sure each function is continuously updated
     aimbot()
-    silentAim()
+    esp()
 end)
