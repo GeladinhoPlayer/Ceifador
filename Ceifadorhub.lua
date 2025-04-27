@@ -111,6 +111,7 @@ local scriptTab = Window:MakeTab({
 scriptTab:AddButton({
     Name = "Ativar Wallhack (NoClip)",
     Callback = function()
+        print("Toggling NoClip")  -- Debug message
         toggleNoClip()
         OrionLib:MakeNotification({
             Name = "Wallhack",
@@ -124,6 +125,7 @@ scriptTab:AddButton({
     Name = "Ativar Aimbot",
     Callback = function()
         aimbotEnabled = not aimbotEnabled
+        print("Aimbot Toggled: " .. tostring(aimbotEnabled))  -- Debug message
         OrionLib:MakeNotification({
             Name = "Aimbot",
             Content = aimbotEnabled and "Aimbot Ativado" or "Aimbot Desativado",
@@ -136,6 +138,7 @@ scriptTab:AddButton({
     Name = "Ativar ESP",
     Callback = function()
         espEnabled = not espEnabled
+        print("ESP Toggled: " .. tostring(espEnabled))  -- Debug message
         OrionLib:MakeNotification({
             Name = "ESP",
             Content = espEnabled and "ESP Ativado" or "ESP Desativado",
@@ -149,6 +152,7 @@ scriptTab:AddButton({
     Name = "Ativar Silent Aim",
     Callback = function()
         silentAimEnabled = not silentAimEnabled
+        print("Silent Aim Toggled: " .. tostring(silentAimEnabled))  -- Debug message
         OrionLib:MakeNotification({
             Name = "Silent Aim",
             Content = silentAimEnabled and "Silent Aim Ativado" or "Silent Aim Desativado",
@@ -171,8 +175,8 @@ configTab:AddParagraph("Criador", "Geladinho#1234")
 OrionLib:Init()
 
 -- Keep the aimbot, esp, and silent aim functions running in a loop
-while true do
-    wait(1)
+game:GetService("RunService").RenderStepped:Connect(function()
+    -- Make sure each function is continuously updated
     aimbot()
     silentAim()
-end
+end)
