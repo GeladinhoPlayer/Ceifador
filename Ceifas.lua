@@ -1,89 +1,217 @@
--- Função para detectar cliques do mouse
-local function isMouseButtonPressed()
-    return game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
-end
+-- Carregar a biblioteca Orion UI
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
 
--- Função de AutoShoot
-local function autoShoot()
-    while true do
-        if isMouseButtonPressed() then
-            -- Aqui simula o tiro, você pode colocar a lógica real de tiro
-            local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.Health = humanoid.Health - 1
-            end
-            wait(0.1)  -- Ajuste a frequência do tiro
-        end
+-- Variáveis iniciais
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = LocalPlayer:GetMouse()
+
+-- Variáveis de controle
+local AIMBOT_ENABLED = false
+local ESP_ENABLED = false
+local SNOW_FOV = false
+local noclip = false
+local shooting = false
+local ESP_OBJECTS = {}
+local ESP_COLOR = Color3.fromRGB(255, 0, 0)
+local FOV_RADIUS = 100
+local AUTO_SHOOT = false
+local FOV_CIRCLE = false
+local isMobile = game:GetService("UserInputService").TouchEnabled
+
+-- Função para detectar cliques no PC e toques no celular
+local function isMouseButtonPressed()
+    if isMobile then
+        return game:GetService("UserInputService"):IsTouchEnabled() and #game:GetService("UserInputService"):GetTouches() > 0
+    else
+        return game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
     end
 end
 
--- Função para criar a interface de menu simples
-local function createMenu()
-    -- Criar um painel com botões simples
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = game.Players.LocalPlayer.PlayerGui
-    screenGui.Name = "MenuHub"
-
-    -- Painel principal
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 300, 0, 300)
-    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    mainFrame.Parent = screenGui
-
-    -- Título
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 40)
-    titleLabel.Text = "Exploit Hub"
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    titleLabel.Parent = mainFrame
-
-    -- Botão de AutoShoot
-    local autoShootButton = Instance.new("TextButton")
-    autoShootButton.Size = UDim2.new(0, 280, 0, 50)
-    autoShootButton.Position = UDim2.new(0.5, -140, 0, 50)
-    autoShootButton.Text = "Ativar AutoShoot"
-    autoShootButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    autoShootButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-    autoShootButton.Parent = mainFrame
-
-    autoShootButton.MouseButton1Click:Connect(function()
-        -- Lógica para alternar entre ativar e desativar
-        local isAutoShootEnabled = false
-        isAutoShootEnabled = not isAutoShootEnabled
-        if isAutoShootEnabled then
-            autoShootButton.Text = "Desativar AutoShoot"
-            autoShoot()
-        else
-            autoShootButton.Text = "Ativar AutoShoot"
-            print("AutoShoot Desativado")
+-- Função para encontrar o jogador mais próximo
+local function getClosestValidPlayer()
+    local closest, shortestDistance = nil, math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local headPos, onScreen = camera:WorldToViewportPoint(player.Character.Head.Position)
+            local distance = (Vector2.new(headPos.X, headPos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+            
+            -- Verificar se está acima do mapa e vivo
+            if onScreen and headPos.Z > 0 and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character:FindFirstChildWhichIsA("Humanoid").Health > 0 then
+                if distance < shortestDistance then
+                    closest = player
+                    shortestDistance = distance
+                end
+            end
         end
-    end)
-
-    -- Botão para ativar a função de Aimbot (apenas exemplo, lógica de aimbot precisa ser adicionada)
-    local aimbotButton = Instance.new("TextButton")
-    aimbotButton.Size = UDim2.new(0, 280, 0, 50)
-    aimbotButton.Position = UDim2.new(0.5, -140, 0, 120)
-    aimbotButton.Text = "Ativar Aimbot"
-    aimbotButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    aimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    aimbotButton.Parent = mainFrame
-
-    aimbotButton.MouseButton1Click:Connect(function()
-        -- Lógica para alternar entre ativar e desativar o aimbot
-        local isAimbotEnabled = false
-        isAimbotEnabled = not isAimbotEnabled
-        if isAimbotEnabled then
-            aimbotButton.Text = "Desativar Aimbot"
-            print("Aimbot Ativado")
-            -- Aqui seria a lógica para o Aimbot, exemplo de código a ser ajustado
-        else
-            aimbotButton.Text = "Ativar Aimbot"
-            print("Aimbot Desativado")
-        end
-    end)
+    end
+    return closest
 end
 
--- Chama a função para criar o menu
-createMenu()
+-- Função para criar ESP no jogador
+local function createESP(player)
+    local box = Drawing.new("Square")
+    box.Color = ESP_COLOR
+    box.Thickness = 2
+    box.Transparency = 1
+    box.Filled = false
+    ESP_OBJECTS[player] = box
+end
+
+-- Função para remover o ESP do jogador
+local function removeESP(player)
+    if ESP_OBJECTS[player] then
+        ESP_OBJECTS[player]:Remove()
+        ESP_OBJECTS[player] = nil
+    end
+end
+
+-- Atualização do loop de execução
+RunService.RenderStepped:Connect(function()
+    -- Aimbot
+    if AIMBOT_ENABLED then
+        local target = getClosestValidPlayer()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            camera.CFrame = CFrame.new(camera.CFrame.Position, target.Character.Head.Position)
+
+            -- Atirar automaticamente se Auto Shoot estiver ativado
+            if AUTO_SHOOT and isMouseButtonPressed() then
+                mouse1press()
+                task.wait(0.1)
+                mouse1release()
+            end
+        end
+    end
+
+    -- ESP
+    if ESP_ENABLED then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                if not ESP_OBJECTS[player] then
+                    createESP(player)
+                end
+                local head = player.Character.Head
+                local pos, visible = camera:WorldToViewportPoint(head.Position)
+                local size = (camera:WorldToViewportPoint(head.Position + Vector3.new(2, 3, 0)) - camera:WorldToViewportPoint(head.Position - Vector3.new(2, 3, 0))).Magnitude
+                local box = ESP_OBJECTS[player]
+                box.Size = Vector2.new(size, size * 1.5)
+                box.Position = Vector2.new(pos.X - box.Size.X/2, pos.Y - box.Size.Y/2)
+                box.Color = ESP_COLOR
+                box.Visible = visible
+            else
+                removeESP(player)
+            end
+        end
+    end
+
+    -- FOV Circle
+    if SNOW_FOV then
+        if not FOV_CIRCLE then
+            FOV_CIRCLE = Drawing.new("Circle")
+            FOV_CIRCLE.Color = Color3.fromRGB(200, 200, 255)
+            FOV_CIRCLE.Thickness = 1.5
+            FOV_CIRCLE.Radius = FOV_RADIUS
+            FOV_CIRCLE.Transparency = 0.6
+            FOV_CIRCLE.Filled = false
+        end
+        local mousePos = LocalPlayer:GetMouse()
+        FOV_CIRCLE.Position = Vector2.new(mousePos.X, mousePos.Y)
+        FOV_CIRCLE.Visible = true
+    elseif FOV_CIRCLE then
+        FOV_CIRCLE.Visible = false
+    end
+
+    -- NoClip
+    if noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- Criar a janela principal do menu
+local Window = OrionLib:MakeWindow({
+    Name = "HyperHub | V3",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "HyperHub | V3",
+    IntroEnabled = true,
+    IntroText = "Bem-vindo ao HyperHub | V3!",
+    Icon = "rbxassetid://4483345998"
+})
+
+-- Criar a aba principal do menu
+local Tab = Window:MakeTab({
+    Name = "Menu",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+    Name = "Recursos"
+})
+
+-- Adicionar os botões ao menu
+Section:AddButton({
+    Name = "Ativar Aimbot",
+    Callback = function()
+        AIMBOT_ENABLED = not AIMBOT_ENABLED
+        OrionLib:MakeNotification({
+            Name = "Aimbot",
+            Content = AIMBOT_ENABLED and "Aimbot Ativado" or "Aimbot Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar ESP",
+    Callback = function()
+        ESP_ENABLED = not ESP_ENABLED
+        OrionLib:MakeNotification({
+            Name = "ESP",
+            Content = ESP_ENABLED and "ESP Ativado" or "ESP Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Silent Aim",
+    Callback = function()
+        shooting = not shooting
+        OrionLib:MakeNotification({
+            Name = "Silent Aim",
+            Content = shooting and "Silent Aim Ativado" or "Silent Aim Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Wallhack (NoClip)",
+    Callback = function()
+        noclip = not noclip
+        OrionLib:MakeNotification({
+            Name = "Wallhack",
+            Content = noclip and "Wallhack Ativado" or "Wallhack Desativado",
+            Time = 3
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Auto Shoot",
+    Callback = function()
+        AUTO_SHOOT = not AUTO_SHOOT
+        OrionLib:MakeNotification({
+            Name = "Auto Shoot",
+            Content = AUTO_SHOOT and "Auto Shoot Ativado" or "Auto Shoot Desativado",
+            Time = 3
+        })
+    end
+})
