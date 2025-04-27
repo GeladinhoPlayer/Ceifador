@@ -1,40 +1,56 @@
--- Carregar Orion UI
+-- Carregar a biblioteca Orion UI
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
 
--- Serviços
+-- Variáveis iniciais
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
+local camera = workspace.CurrentCamera
+local mouse = LocalPlayer:GetMouse()
 
--- Variáveis
+-- Variáveis de controle
 local AIMBOT_ENABLED = false
 local ESP_ENABLED = false
-local SILENT_AIM = false
-local NOCLIP = false
+local SNOW_FOV = false
+local noclip = false
+local shooting = false
 local ESP_OBJECTS = {}
 local ESP_COLOR = Color3.fromRGB(255, 0, 0)
 local FOV_RADIUS = 100
-local FOV_CIRCLE = nil
+local AUTO_SHOOT = false
+local FOV_CIRCLE = false
+local isMobile = game:GetService("UserInputService").TouchEnabled
 
--- Funções
-local function getClosestPlayer()
+-- Função para detectar cliques no PC e toques no celular
+local function isMouseButtonPressed()
+    if isMobile then
+        return game:GetService("UserInputService"):IsTouchEnabled() and #game:GetService("UserInputService"):GetTouches() > 0
+    else
+        return game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+    end
+end
+
+-- Função para encontrar o jogador mais próximo
+local function getClosestValidPlayer()
     local closest, shortestDistance = nil, math.huge
-    local mouse = LocalPlayer:GetMouse()
-
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-            local pos = Camera:WorldToViewportPoint(player.Character.Head.Position)
-            local distance = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
-            if distance < shortestDistance then
-                closest = player
-                shortestDistance = distance
+            local headPos, onScreen = camera:WorldToViewportPoint(player.Character.Head.Position)
+            local distance = (Vector2.new(headPos.X, headPos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+            
+            -- Verificar se está acima do mapa e vivo
+            if onScreen and headPos.Z > 0 and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character:FindFirstChildWhichIsA("Humanoid").Health > 0 then
+                if distance < shortestDistance then
+                    closest = player
+                    shortestDistance = distance
+                end
             end
         end
     end
     return closest
 end
 
+-- Função para criar ESP no jogador
 local function createESP(player)
     local box = Drawing.new("Square")
     box.Color = ESP_COLOR
@@ -44,6 +60,7 @@ local function createESP(player)
     ESP_OBJECTS[player] = box
 end
 
+-- Função para remover o ESP do jogador
 local function removeESP(player)
     if ESP_OBJECTS[player] then
         ESP_OBJECTS[player]:Remove()
@@ -51,48 +68,63 @@ local function removeESP(player)
     end
 end
 
--- Main Loop
+-- Atualização do loop de execução
 RunService.RenderStepped:Connect(function()
     -- Aimbot
-    if AIMBOT_ENABLED and SILENT_AIM then
-        local target = getClosestPlayer()
+    if AIMBOT_ENABLED then
+        local target = getClosestValidPlayer()
         if target and target.Character and target.Character:FindFirstChild("Head") then
-            if target.Team ~= LocalPlayer.Team then
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
+            camera.CFrame = CFrame.new(camera.CFrame.Position, target.Character.Head.Position)
+
+            -- Atirar automaticamente se Auto Shoot estiver ativado
+            if AUTO_SHOOT and isMouseButtonPressed() then
+                mouse1press()
+                task.wait(0.1)
+                mouse1release()
             end
         end
     end
 
     -- ESP
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-            if not ESP_OBJECTS[player] then
-                createESP(player)
+    if ESP_ENABLED then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                if not ESP_OBJECTS[player] then
+                    createESP(player)
+                end
+                local head = player.Character.Head
+                local pos, visible = camera:WorldToViewportPoint(head.Position)
+                local size = (camera:WorldToViewportPoint(head.Position + Vector3.new(2, 3, 0)) - camera:WorldToViewportPoint(head.Position - Vector3.new(2, 3, 0))).Magnitude
+                local box = ESP_OBJECTS[player]
+                box.Size = Vector2.new(size, size * 1.5)
+                box.Position = Vector2.new(pos.X - box.Size.X/2, pos.Y - box.Size.Y/2)
+                box.Color = ESP_COLOR
+                box.Visible = visible
+            else
+                removeESP(player)
             end
-
-            local head = player.Character.Head
-            local pos, visible = Camera:WorldToViewportPoint(head.Position)
-            local size = (Camera:WorldToViewportPoint(head.Position + Vector3.new(2, 3, 0)) - Camera:WorldToViewportPoint(head.Position - Vector3.new(2, 3, 0))).Magnitude
-            local box = ESP_OBJECTS[player]
-            box.Size = Vector2.new(size, size * 1.5)
-            box.Position = Vector2.new(pos.X - box.Size.X/2, pos.Y - box.Size.Y/2)
-            box.Color = ESP_COLOR
-            box.Visible = ESP_ENABLED and visible
-        else
-            removeESP(player)
         end
     end
 
     -- FOV Circle
-    if FOV_CIRCLE then
-        local mouse = LocalPlayer:GetMouse()
-        FOV_CIRCLE.Position = Vector2.new(mouse.X, mouse.Y)
+    if SNOW_FOV then
+        if not FOV_CIRCLE then
+            FOV_CIRCLE = Drawing.new("Circle")
+            FOV_CIRCLE.Color = Color3.fromRGB(200, 200, 255)
+            FOV_CIRCLE.Thickness = 1.5
+            FOV_CIRCLE.Radius = FOV_RADIUS
+            FOV_CIRCLE.Transparency = 0.6
+            FOV_CIRCLE.Filled = false
+        end
+        local mousePos = LocalPlayer:GetMouse()
+        FOV_CIRCLE.Position = Vector2.new(mousePos.X, mousePos.Y)
+        FOV_CIRCLE.Visible = true
+    elseif FOV_CIRCLE then
+        FOV_CIRCLE.Visible = false
     end
-end)
 
--- Noclip
-RunService.Stepped:Connect(function()
-    if NOCLIP and LocalPlayer.Character then
+    -- NoClip
+    if noclip and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") and part.CanCollide == true then
                 part.CanCollide = false
@@ -101,139 +133,85 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Criar Janela Principal
+-- Criar a janela principal do menu
 local Window = OrionLib:MakeWindow({
     Name = "HyperHub | V3",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "HyperHubV3",
+    ConfigFolder = "HyperHub | V3",
     IntroEnabled = true,
     IntroText = "Bem-vindo ao HyperHub | V3!",
     Icon = "rbxassetid://4483345998"
 })
 
--- Home
-local HomeTab = Window:MakeTab({
-    Name = "Home",
+-- Criar a aba principal do menu
+local Tab = Window:MakeTab({
+    Name = "Menu",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
-HomeTab:AddParagraph("HyperHub | V3", "Bem-vindo ao melhor Hub de Roblox!")
-
--- Scripts - Combat
-local CombatTab = Window:MakeTab({
-    Name = "Combat Scripts",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
+local Section = Tab:AddSection({
+    Name = "Recursos"
 })
 
-CombatTab:AddButton({
+-- Adicionar os botões ao menu
+Section:AddButton({
     Name = "Ativar Aimbot",
     Callback = function()
         AIMBOT_ENABLED = not AIMBOT_ENABLED
         OrionLib:MakeNotification({
             Name = "Aimbot",
-            Content = AIMBOT_ENABLED and "Aimbot Ativado!" or "Aimbot Desativado!",
+            Content = AIMBOT_ENABLED and "Aimbot Ativado" or "Aimbot Desativado",
             Time = 3
         })
     end
 })
 
-CombatTab:AddButton({
-    Name = "Ativar Silent Aim",
-    Callback = function()
-        SILENT_AIM = not SILENT_AIM
-        OrionLib:MakeNotification({
-            Name = "Silent Aim",
-            Content = SILENT_AIM and "Silent Aim Ativado!" or "Silent Aim Desativado!",
-            Time = 3
-        })
-    end
-})
-
--- Scripts - Visual
-local VisualTab = Window:MakeTab({
-    Name = "Visual Scripts",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-VisualTab:AddButton({
+Section:AddButton({
     Name = "Ativar ESP",
     Callback = function()
         ESP_ENABLED = not ESP_ENABLED
         OrionLib:MakeNotification({
             Name = "ESP",
-            Content = ESP_ENABLED and "ESP Ativado!" or "ESP Desativado!",
+            Content = ESP_ENABLED and "ESP Ativado" or "ESP Desativado",
             Time = 3
         })
     end
 })
 
-VisualTab:AddColorpicker({
-    Name = "Cor do ESP",
-    Default = ESP_COLOR,
-    Callback = function(color)
-        ESP_COLOR = color
+Section:AddButton({
+    Name = "Ativar Silent Aim",
+    Callback = function()
+        shooting = not shooting
+        OrionLib:MakeNotification({
+            Name = "Silent Aim",
+            Content = shooting and "Silent Aim Ativado" or "Silent Aim Desativado",
+            Time = 3
+        })
     end
 })
 
-VisualTab:AddButton({
-    Name = "Ativar Wallhack (Noclip)",
+Section:AddButton({
+    Name = "Ativar Wallhack (NoClip)",
     Callback = function()
-        NOCLIP = not NOCLIP
+        noclip = not noclip
         OrionLib:MakeNotification({
             Name = "Wallhack",
-            Content = NOCLIP and "Wallhack Ativado!" or "Wallhack Desativado!",
+            Content = noclip and "Wallhack Ativado" or "Wallhack Desativado",
             Time = 3
         })
     end
 })
 
--- Player Settings
-local PlayerTab = Window:MakeTab({
-    Name = "Player Settings",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-PlayerTab:AddSlider({
-    Name = "Speed",
-    Min = 16,
-    Max = 200,
-    Default = 16,
-    Increment = 1,
-    ValueName = "Velocidade",
-    Callback = function(value)
-        if LocalPlayer.Character then
-            LocalPlayer.Character.Humanoid.WalkSpeed = value
-        end
-    end
-})
-
-PlayerTab:AddSlider({
-    Name = "JumpPower",
-    Min = 50,
-    Max = 300,
-    Default = 50,
-    Increment = 1,
-    ValueName = "Pulo",
-    Callback = function(value)
-        if LocalPlayer.Character then
-            LocalPlayer.Character.Humanoid.JumpPower = value
-        end
-    end
-})
-
-PlayerTab:AddSlider({
-    Name = "Gravidade",
-    Min = 10,
-    Max = 300,
-    Default = 196.2,
-    Increment = 0.1,
-    ValueName = "Gravidade",
-    Callback = function(value)
-        workspace.Gravity = value
+Section:AddButton({
+    Name = "Ativar Auto Shoot",
+    Callback = function()
+        AUTO_SHOOT = not AUTO_SHOOT
+        OrionLib:MakeNotification({
+            Name = "Auto Shoot",
+            Content = AUTO_SHOOT and "Auto Shoot Ativado" or "Auto Shoot Desativado",
+            Time = 3
+        })
     end
 })
