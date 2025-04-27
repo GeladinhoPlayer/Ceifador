@@ -37,7 +37,7 @@ local TabScripts = Window:MakeTab({
     PremiumOnly = false
 })
 
--- Adicionar seção de Ferramentas e Scripts
+-- Adicionar seção de Scripts
 local SectionScripts = TabScripts:AddSection({
     Name = "Ferramentas"
 })
@@ -105,21 +105,6 @@ SectionScripts:AddButton({
         OrionLib:MakeNotification({
             Name = "Silent Aim",
             Content = "Silent Aim Ativado",
-            Image = "rbxassetid://4483345998",
-            Time = 3
-        })
-    end
-})
-
--- Botão de Wallhack
-SectionScripts:AddButton({
-    Name = "Ativar Wallhack",
-    Callback = function()
-        -- Coloque o código do Wallhack aqui
-        print("Wallhack Ativado!")
-        OrionLib:MakeNotification({
-            Name = "Wallhack",
-            Content = "Wallhack Ativado",
             Image = "rbxassetid://4483345998",
             Time = 3
         })
