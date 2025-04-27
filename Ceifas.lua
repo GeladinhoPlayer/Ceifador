@@ -21,12 +21,15 @@ local AUTO_SHOOT = false
 local FOV_CIRCLE = false
 local isMobile = game:GetService("UserInputService").TouchEnabled
 
--- Função para detectar cliques no PC e toques no celular
+-- Verificar se estamos no PC
+local isPC = not isMobile
+
+-- Função para detectar cliques no PC
 local function isMouseButtonPressed()
-    if isMobile then
-        return game:GetService("UserInputService"):IsTouchEnabled() and #game:GetService("UserInputService"):GetTouches() > 0
-    else
+    if isPC then
         return game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+    else
+        return false
     end
 end
 
@@ -135,7 +138,7 @@ end)
 
 -- Criar a janela principal do menu
 local Window = OrionLib:MakeWindow({
-    Name = "HyperHub | V3",
+    Name = "HyperHub | V3 (PC)",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "HyperHub | V3",
@@ -147,71 +150,4 @@ local Window = OrionLib:MakeWindow({
 -- Criar a aba principal do menu
 local Tab = Window:MakeTab({
     Name = "Menu",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-    Name = "Recursos"
-})
-
--- Adicionar os botões ao menu
-Section:AddButton({
-    Name = "Ativar Aimbot",
-    Callback = function()
-        AIMBOT_ENABLED = not AIMBOT_ENABLED
-        OrionLib:MakeNotification({
-            Name = "Aimbot",
-            Content = AIMBOT_ENABLED and "Aimbot Ativado" or "Aimbot Desativado",
-            Time = 3
-        })
-    end
-})
-
-Section:AddButton({
-    Name = "Ativar ESP",
-    Callback = function()
-        ESP_ENABLED = not ESP_ENABLED
-        OrionLib:MakeNotification({
-            Name = "ESP",
-            Content = ESP_ENABLED and "ESP Ativado" or "ESP Desativado",
-            Time = 3
-        })
-    end
-})
-
-Section:AddButton({
-    Name = "Ativar Silent Aim",
-    Callback = function()
-        shooting = not shooting
-        OrionLib:MakeNotification({
-            Name = "Silent Aim",
-            Content = shooting and "Silent Aim Ativado" or "Silent Aim Desativado",
-            Time = 3
-        })
-    end
-})
-
-Section:AddButton({
-    Name = "Ativar Wallhack (NoClip)",
-    Callback = function()
-        noclip = not noclip
-        OrionLib:MakeNotification({
-            Name = "Wallhack",
-            Content = noclip and "Wallhack Ativado" or "Wallhack Desativado",
-            Time = 3
-        })
-    end
-})
-
-Section:AddButton({
-    Name = "Ativar Auto Shoot",
-    Callback = function()
-        AUTO_SHOOT = not AUTO_SHOOT
-        OrionLib:MakeNotification({
-            Name = "Auto Shoot",
-            Content = AUTO_SHOOT and "Auto Shoot Ativado" or "Auto Shoot Desativado",
-            Time = 3
-        })
-    end
-})
+    Icon
