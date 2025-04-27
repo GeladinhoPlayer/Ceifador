@@ -116,12 +116,12 @@ end)
 
 -- Criar a janela principal do menu
 local Window = OrionLib:MakeWindow({
-    Name = "Ceifador Hub V3",
+    Name = "HyperHub | V3",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "CeifadorHubV3",
+    ConfigFolder = "HyperHub | V3",
     IntroEnabled = true,
-    IntroText = "Bem-vindo ao Ceifador Hub V3!",
+    IntroText = "Bem-vindo ao HyperHub | V3!",
     Icon = "rbxassetid://4483345998"
 })
 
