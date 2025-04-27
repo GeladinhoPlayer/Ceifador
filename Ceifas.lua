@@ -6,16 +6,20 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
+local Ball = workspace:WaitForChild("BladeBall") -- A bola do BladeBall
+local swordEquipped = false
+local immortal = false
 
 -- Variáveis
 local AIMBOT_ENABLED = false
 local ESP_ENABLED = false
 local SILENT_AIM = false
 local NOCLIP = false
-local ESP_OBJECTS = {}
-local ESP_COLOR = Color3.fromRGB(255, 0, 0)
 local FOV_RADIUS = 100
 local FOV_CIRCLE = nil
+local ESP_COLOR = Color3.fromRGB(255, 0, 0)
+local ballVelocity = Vector3.new(0, 0, 0)
+local ballSpeed = 50
 
 -- Funções
 local function getClosestPlayer()
@@ -51,8 +55,43 @@ local function removeESP(player)
     end
 end
 
--- Main Loop
+local function toggleSword()
+    if swordEquipped then
+        -- Desaparecer espada
+        LocalPlayer.Character:FindFirstChild("Sword"):Destroy()
+        swordEquipped = false
+    else
+        -- Criar espada
+        local sword = Instance.new("Tool")
+        sword.Name = "Sword"
+        sword.Parent = LocalPlayer.Backpack
+        swordEquipped = true
+    end
+end
+
+local function kickBall()
+    if swordEquipped and Ball then
+        -- Acionar o movimento da bola com a espada
+        local sword = LocalPlayer.Backpack:FindFirstChild("Sword")
+        if sword then
+            local direction = (Camera.CFrame.LookVector)  -- Direção para onde o jogador está olhando
+            ballVelocity = direction * ballSpeed  -- Velocidade da bola ao ser golpeada
+            Ball.Velocity = ballVelocity
+        end
+    end
+end
+
+-- A função de atualizar a posição da bola
+local function updateBall()
+    if Ball then
+        Ball.CFrame = Ball.CFrame + ballVelocity * RunService.Heartbeat:Wait()
+    end
+end
+
+-- Loop de atualização para a bola
 RunService.RenderStepped:Connect(function()
+    updateBall()
+
     -- Aimbot
     if AIMBOT_ENABLED and SILENT_AIM then
         local target = getClosestPlayer()
@@ -101,14 +140,23 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- Imortalidade
+RunService.Heartbeat:Connect(function()
+    if immortal then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.Health = LocalPlayer.Character.Humanoid.Health -- Imortalidade
+        end
+    end
+end)
+
 -- Criar Janela Principal
 local Window = OrionLib:MakeWindow({
-    Name = "HyperHub | V3",
+    Name = "BladeBall Hub",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "HyperHubV3",
+    ConfigFolder = "BladeBall",
     IntroEnabled = true,
-    IntroText = "Bem-vindo ao HyperHub | V3!",
+    IntroText = "Bem-vindo ao BladeBall!",
     Icon = "rbxassetid://4483345998"
 })
 
@@ -119,106 +167,65 @@ local HomeTab = Window:MakeTab({
     PremiumOnly = false
 })
 
-HomeTab:AddParagraph("HyperHub | V3", "Bem-vindo ao melhor Hub de Roblox!")
+HomeTab:AddParagraph("BladeBall", "Jogue futebol com espadas!")
 
 -- Scripts - Combat
 local CombatTab = Window:MakeTab({
-    Name = "Combat Scripts",
+    Name = "Combate",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
 CombatTab:AddButton({
-    Name = "Ativar Aimbot",
+    Name = "Equipar Espada",
     Callback = function()
-        AIMBOT_ENABLED = not AIMBOT_ENABLED
+        toggleSword()
         OrionLib:MakeNotification({
-            Name = "Aimbot",
-            Content = AIMBOT_ENABLED and "Aimbot Ativado!" or "Aimbot Desativado!",
+            Name = "Espada",
+            Content = swordEquipped and "Espada Equipada!" or "Espada Descartada!",
             Time = 3
         })
     end
 })
 
 CombatTab:AddButton({
-    Name = "Ativar Silent Aim",
+    Name = "Chutar Bola",
     Callback = function()
-        SILENT_AIM = not SILENT_AIM
+        kickBall()
         OrionLib:MakeNotification({
-            Name = "Silent Aim",
-            Content = SILENT_AIM and "Silent Aim Ativado!" or "Silent Aim Desativado!",
+            Name = "Ação",
+            Content = "Você chutou a bola!",
             Time = 3
         })
     end
 })
 
--- Scripts - Visual
-local VisualTab = Window:MakeTab({
-    Name = "Visual Scripts",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-VisualTab:AddButton({
-    Name = "Ativar ESP",
-    Callback = function()
-        ESP_ENABLED = not ESP_ENABLED
-        OrionLib:MakeNotification({
-            Name = "ESP",
-            Content = ESP_ENABLED and "ESP Ativado!" or "ESP Desativado!",
-            Time = 3
-        })
-    end
-})
-
-VisualTab:AddColorpicker({
-    Name = "Cor do ESP",
-    Default = ESP_COLOR,
-    Callback = function(color)
-        ESP_COLOR = color
-    end
-})
-
-VisualTab:AddButton({
-    Name = "Ativar Wallhack (Noclip)",
-    Callback = function()
-        NOCLIP = not NOCLIP
-        OrionLib:MakeNotification({
-            Name = "Wallhack",
-            Content = NOCLIP and "Wallhack Ativado!" or "Wallhack Desativado!",
-            Time = 3
-        })
-    end
-})
-
--- Player Settings
+-- Configurações de Player
 local PlayerTab = Window:MakeTab({
-    Name = "Player Settings",
+    Name = "Configurações do Jogador",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
 PlayerTab:AddSlider({
-    Name = "Speed",
-    Min = 16,
-    Max = 200,
-    Default = 16,
+    Name = "Velocidade da Bola",
+    Min = 10,
+    Max = 100,
+    Default = 50,
     Increment = 1,
     ValueName = "Velocidade",
     Callback = function(value)
-        if LocalPlayer.Character then
-            LocalPlayer.Character.Humanoid.WalkSpeed = value
-        end
+        ballSpeed = value
     end
 })
 
 PlayerTab:AddSlider({
-    Name = "JumpPower",
+    Name = "Força do Pulo",
     Min = 50,
     Max = 300,
     Default = 50,
     Increment = 1,
-    ValueName = "Pulo",
+    ValueName = "Força do Pulo",
     Callback = function(value)
         if LocalPlayer.Character then
             LocalPlayer.Character.Humanoid.JumpPower = value
@@ -226,14 +233,48 @@ PlayerTab:AddSlider({
     end
 })
 
-PlayerTab:AddSlider({
-    Name = "Gravidade",
-    Min = 10,
-    Max = 300,
-    Default = 196.2,
-    Increment = 0.1,
-    ValueName = "Gravidade",
+PlayerTab:AddToggle({
+    Name = "Imortalidade",
+    Default = false,
     Callback = function(value)
-        workspace.Gravity = value
+        immortal = value
     end
 })
+
+PlayerTab:AddSlider({
+    Name = "Raio do FOV",
+    Min = 50,
+    Max = 200,
+    Default = 100,
+    Increment = 1,
+    ValueName = "Raio",
+    Callback = function(value)
+        FOV_RADIUS = value
+        if FOV_CIRCLE then
+            FOV_CIRCLE.Radius = FOV_RADIUS
+        end
+    end
+})
+
+-- Adicionar a Bola e a Arena no Workspace
+local function createArena()
+    -- Bola
+    local ball = Instance.new("Part")
+    ball.Size = Vector3.new(5, 5, 5)  -- Tamanho da bola
+    ball.Shape = Enum.PartType.Ball
+    ball.Position = Vector3.new(0, 5, 0)  -- Posição inicial da bola
+    ball.Anchored = false
+    ball.CanCollide = true
+    ball.BrickColor = BrickColor.new("Bright red")
+    ball.Name = "BladeBall"
+    ball.Parent = workspace
+
+    -- Adicionar efeito de física à bola
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.Parent = ball
+end
+
+-- Inicializar Arena
+createArena()
