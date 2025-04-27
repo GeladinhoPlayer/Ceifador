@@ -1,2 +1,102 @@
+--[[
+    Ceifador | V3
+    Hub de Tiro, Feito para executores Mobile (Delta, Hydrogen, etc)
+]]
 
-local player = game.Players.LocalPlayer local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))() local Window = OrionLib:MakeWindow({Name = "Ceifador | V3", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"}) --[[ Name = - The name of the UI. HidePremium = - Whether or not the user details shows Premium status or not. SaveConfig = - Toggles the config saving in the UI. ConfigFolder = - The name of the folder where the configs are saved. IntroEnabled = false - Whether or not to show the intro animation. IntroText = - Text to show in the intro animation. IntroIcon = - URL to the image you want to use in the intro animation. Icon = - URL to the image you want displayed on the window. CloseCallback = - Function to execute when the window is closed. ]] local Tab = Window:MakeTab({ Name = "Tab 1", Icon = "rbxassetid://4483345998", PremiumOnly = false }) --[[ Name = - The name of the tab. Icon = - The icon of the tab. PremiumOnly = - Makes the tab accessible to Sirus Premium users only. ]] local Section = Tab:AddSection({ Name = "LocalPlayer" }) --[[ Name = - The name of the section. ]] OrionLib:MakeNotification({ Name = "Welcome!", Content = "Welcome to my hub!", Image = "rbxassetid://4483345998", Time = 5 }) --[[ Title = - The title of the notification. Content = - The content of the notification. Image = - The icon of the notification. Time = - The duration of the notfication. ]] Tab:AddButton({ Name = "High Speed", Callback = function() player.Character.Humanoid.WalkSpeed = 500 end }) --[[ Name = - The name of the button. Callback = - The function of the button. ]] Tab:AddButton({ Name = "High Jumppower", Callback = function() player.Character.Humanoid.JumpPower = 100 end }) --[[ Name = - The name of the button. Callback = - The function of the button. ]] Tab:AddButton({ Name = "Low Gravity", Callback = function() game.Workspace.Gravity = 10 end }) --[[ Name = - The name of the button. Callback = - The function of the button. ]] --[[ Name = - The name of the button. Callback = - The function of the button. ]]
+-- Criar a GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CeifadorHub"
+ScreenGui.Parent = game.CoreGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundTransparency = 1
+Title.Text = "Ceifador | V3"
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 28
+Title.Parent = MainFrame
+
+-- Criação das páginas
+local Page1 = Instance.new("Frame")
+Page1.Size = UDim2.new(1, 0, 1, -50)
+Page1.Position = UDim2.new(0, 0, 0, 50)
+Page1.BackgroundTransparency = 1
+Page1.Parent = MainFrame
+
+local Page2 = Instance.new("Frame")
+Page2.Size = UDim2.new(1, 0, 1, -50)
+Page2.Position = UDim2.new(0, 0, 0, 50)
+Page2.BackgroundTransparency = 1
+Page2.Visible = false
+Page2.Parent = MainFrame
+
+-- Botões de navegação
+local NextPageBtn = Instance.new("TextButton")
+NextPageBtn.Size = UDim2.new(0, 80, 0, 30)
+NextPageBtn.Position = UDim2.new(1, -90, 1, -40)
+NextPageBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+NextPageBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+NextPageBtn.Font = Enum.Font.Gotham
+NextPageBtn.Text = "Próxima"
+NextPageBtn.Parent = MainFrame
+
+local BackPageBtn = Instance.new("TextButton")
+BackPageBtn.Size = UDim2.new(0, 80, 0, 30)
+BackPageBtn.Position = UDim2.new(0, 10, 1, -40)
+BackPageBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BackPageBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BackPageBtn.Font = Enum.Font.Gotham
+BackPageBtn.Text = "Voltar"
+BackPageBtn.Visible = false
+BackPageBtn.Parent = MainFrame
+
+-- Função para criar botões dentro das páginas
+local function createButton(parent, text, position, scriptUrl)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0.8, 0, 0, 40)
+    Button.Position = UDim2.new(0.1, 0, 0, position)
+    Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.Gotham
+    Button.TextSize = 18
+    Button.Text = text
+    Button.Parent = parent
+
+    Button.MouseButton1Click:Connect(function()
+        loadstring(game:HttpGet(scriptUrl))()
+    end)
+end
+
+-- Botões da Página 1 (Aimbot, ESP, No Recoil)
+createButton(Page1, "Aimbot", 30, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/aimbot.lua")
+createButton(Page1, "ESP (Ver Inimigos)", 100, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/esp.lua")
+createButton(Page1, "No Recoil", 170, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/norecoil.lua")
+
+-- Botões da Página 2 (Wallbang, Fly Hack, Speed Hack)
+createButton(Page2, "Wallbang (Atirar nas paredes)", 30, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/wallbang.lua")
+createButton(Page2, "Fly Hack", 100, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/fly.lua")
+createButton(Page2, "Speed Hack", 170, "https://raw.githubusercontent.com/SEUNOME/ceifadorhub/main/speed.lua")
+
+-- Lógica dos botões de trocar de página
+NextPageBtn.MouseButton1Click:Connect(function()
+    Page1.Visible = false
+    Page2.Visible = true
+    NextPageBtn.Visible = false
+    BackPageBtn.Visible = true
+end)
+
+BackPageBtn.MouseButton1Click:Connect(function()
+    Page1.Visible = true
+    Page2.Visible = false
+    NextPageBtn.Visible = true
+    BackPageBtn.Visible = false
+end)
