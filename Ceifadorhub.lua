@@ -1,47 +1,29 @@
--- LocalScript: Menu Interativo (Arrastar e Minimizar)
-local player = game.Players.LocalPlayer
-local screenGui = script.Parent
-local frame = screenGui:WaitForChild("Frame")
-local minimizeButton = frame:WaitForChild("MinimizeButton")
+--// Simple Shooter Hub
 
--- Variáveis para arrastar
-local dragging = false
-local dragStart = nil
-local startPosition = nil
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall"))()
 
--- Função para começar o arrasto
-frame.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPosition = frame.Position
-    end
+local Window = Library:CreateWindow("Shooter Hub V1") -- título do hub
+local Main = Window:CreateFolder("Games") -- aba principal
+
+-- Botões de jogos
+Main:Button("Arsenal", function()
+    loadstring(game:HttpGet("COLE_AQUI_O_SCRIPT_DO_JOGO"))()
 end)
 
--- Função para arrastar
-frame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X, startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
-    end
+Main:Button("Bad Business", function()
+    loadstring(game:HttpGet("COLE_AQUI_O_SCRIPT_DO_JOGO"))()
 end)
 
--- Função para parar o arrasto
-frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
+Main:Button("Phantom Forces", function()
+    loadstring(game:HttpGet("COLE_AQUI_O_SCRIPT_DO_JOGO"))()
 end)
 
--- Minimizar/Maximizar o Menu
-local isMinimized = false
-minimizeButton.MouseButton1Click:Connect(function()
-    if isMinimized then
-        frame.Size = UDim2.new(0, 200, 0, 200)  -- Tamanho original
-        isMinimized = false
-    else
-        frame.Size = UDim2.new(0, 50, 0, 50)   -- Tamanho minimizado
-        isMinimized = true
-    end
+Main:Button("Energy Assault", function()
+    loadstring(game:HttpGet("COLE_AQUI_O_SCRIPT_DO_JOGO"))()
 end)
+
+Main:Button("Aim Trainer", function()
+    loadstring(game:HttpGet("COLE_AQUI_O_SCRIPT_DO_JOGO"))()
+end)
+
+Main:DestroyGui()
