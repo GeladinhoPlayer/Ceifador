@@ -1,41 +1,100 @@
--- Script Executor Básico para Roblox (só para fins legítimos no seu jogo)
-local executorFrame = Instance.new("ScreenGui")
-executorFrame.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Carregar a biblioteca Orion UI
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
 
-local inputBox = Instance.new("TextBox")
-inputBox.Parent = executorFrame
-inputBox.Size = UDim2.new(0, 400, 0, 40)
-inputBox.Position = UDim2.new(0.5, -200, 0.4, 0)
-inputBox.PlaceholderText = "Digite seu script Lua aqui"
-inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-inputBox.Font = Enum.Font.SourceSans
-inputBox.TextScaled = true
+-- Definindo a chave para acesso
+local key = "9M"
 
-local executeButton = Instance.new("TextButton")
-executeButton.Parent = executorFrame
-executeButton.Size = UDim2.new(0, 100, 0, 40)
-executeButton.Position = UDim2.new(0.5, -50, 0.5, 0)
-executeButton.Text = "Executar"
-executeButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-executeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-executeButton.Font = Enum.Font.SourceSans
-executeButton.TextScaled = true
+-- Criar a janela principal do menu
+local Window = OrionLib:MakeWindow({
+    Name = "Ceifador Hub V3",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "CeifadorHubV3",
+    IntroEnabled = true,
+    IntroText = "Bem-vindo ao Ceifador Hub V3!",
+    Icon = "rbxassetid://4483345998"
+})
 
--- Função de execução do script
-executeButton.MouseButton1Click:Connect(function()
-    local userInput = inputBox.Text
-    if userInput and userInput ~= "" then
-        local success, result = pcall(function()
-            -- Executando o código do usuário de forma controlada
-            loadstring(userInput)()
-        end)
-        if success then
-            print("Script executado com sucesso!")
-        else
-            print("Erro ao executar o script: " .. result)
-        end
+-- Função de Key
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Parent = game.CoreGui
+KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+KeyFrame.Size = UDim2.new(0, 300, 0, 200)
+
+local TextBox = Instance.new("TextBox")
+TextBox.Parent = KeyFrame
+TextBox.PlaceholderText = "Digite a key aqui"
+TextBox.Text = ""
+TextBox.Size = UDim2.new(0, 200, 0, 40)
+TextBox.Position = UDim2.new(0.15, 0, 0.2, 0)
+TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Font = Enum.Font.SourceSans
+TextBox.TextScaled = true
+
+local SubmitButton = Instance.new("TextButton")
+SubmitButton.Parent = KeyFrame
+SubmitButton.Text = "Entrar"
+SubmitButton.Size = UDim2.new(0, 150, 0, 40)
+SubmitButton.Position = UDim2.new(0.25, 0, 0.6, 0)
+SubmitButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitButton.Font = Enum.Font.SourceSans
+SubmitButton.TextScaled = true
+
+-- Função para verificar key e exibir o menu
+SubmitButton.MouseButton1Click:Connect(function()
+    if TextBox.Text == key then
+        KeyFrame.Visible = false
+        -- Criar a aba principal do menu
+        local Tab = Window:MakeTab({
+            Name = "Recursos",
+            Icon = "rbxassetid://4483345998",
+            PremiumOnly = false
+        })
+
+        local Section = Tab:AddSection({
+            Name = "Ferramentas"
+        })
+
+        -- Adicionar botões com funcionalidades
+        Section:AddButton({
+            Name = "Ativar Aimbot",
+            Callback = function()
+                print("Aimbot ativado!")
+                -- Aqui você pode adicionar o código para ativar o Aimbot
+            end
+        })
+
+        Section:AddButton({
+            Name = "Ativar ESP",
+            Callback = function()
+                print("ESP ativado!")
+                -- Aqui você pode adicionar o código para ativar o ESP
+            end
+        })
+
+        Section:AddButton({
+            Name = "Ativar Silent Aim",
+            Callback = function()
+                print("Silent Aim ativado!")
+                -- Aqui você pode adicionar o código para ativar o Silent Aim
+            end
+        })
+
+        Section:AddButton({
+            Name = "Ativar Wallhack",
+            Callback = function()
+                print("Wallhack ativado!")
+                -- Aqui você pode adicionar o código para ativar o Wallhack
+            end
+        })
+
+        -- Exibir a janela do menu hub
+        Window:Show()
     else
-        print("Nenhum código fornecido!")
+        TextBox.Text = ""
+        TextBox.PlaceholderText = "Key incorreta!"
     end
 end)
