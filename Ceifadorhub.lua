@@ -1,9 +1,6 @@
 -- Carregar a biblioteca Orion UI
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
 
--- Definindo a chave para acesso
-local key = "9M"
-
 -- Criar a janela principal do menu
 local Window = OrionLib:MakeWindow({
     Name = "Ceifador Hub V3",
@@ -15,131 +12,92 @@ local Window = OrionLib:MakeWindow({
     Icon = "rbxassetid://4483345998"
 })
 
--- Função de Key
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Parent = game.CoreGui
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeyFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
-KeyFrame.Size = UDim2.new(0, 300, 0, 200)
+-- Criar a aba Home
+local TabHome = Window:MakeTab({
+    Name = "Home",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 
-local TextBox = Instance.new("TextBox")
-TextBox.Parent = KeyFrame
-TextBox.PlaceholderText = "Digite a key aqui"
-TextBox.Text = ""
-TextBox.Size = UDim2.new(0, 200, 0, 40)
-TextBox.Position = UDim2.new(0.15, 0, 0.2, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.Font = Enum.Font.SourceSans
-TextBox.TextScaled = true
-
-local SubmitButton = Instance.new("TextButton")
-SubmitButton.Parent = KeyFrame
-SubmitButton.Text = "Entrar"
-SubmitButton.Size = UDim2.new(0, 150, 0, 40)
-SubmitButton.Position = UDim2.new(0.25, 0, 0.6, 0)
-SubmitButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SubmitButton.Font = Enum.Font.SourceSans
-SubmitButton.TextScaled = true
-
--- Função para verificar key e exibir o menu
-SubmitButton.MouseButton1Click:Connect(function()
-    if TextBox.Text == key then
-        KeyFrame.Visible = false
-        
-        -- Criar a aba Home
-        local TabHome = Window:MakeTab({
-            Name = "Home",
-            Icon = "rbxassetid://4483345998",
-            PremiumOnly = false
+TabHome:AddButton({
+    Name = "Bem-vindo ao Ceifador Hub!",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "Mensagem",
+            Content = "Bem-vindo ao Ceifador Hub V3!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
         })
-        
-        TabHome:AddButton({
-            Name = "Bem-vindo ao Ceifador Hub!",
-            Callback = function()
-                OrionLib:MakeNotification({
-                    Name = "Mensagem",
-                    Content = "Bem-vindo ao Ceifador Hub V3!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-        })
-        
-        -- Criar a aba Scripts
-        local TabScripts = Window:MakeTab({
-            Name = "Scripts",
-            Icon = "rbxassetid://4483345998",
-            PremiumOnly = false
-        })
-        
-        -- Adicionar categoria de scripts com botões
-        local Section = TabScripts:AddSection({
-            Name = "Ferramentas"
-        })
-        
-        -- Adicionar botões de scripts
-        Section:AddButton({
-            Name = "Ativar Aimbot",
-            Callback = function()
-                -- Aqui você deve adicionar o código para ativar o Aimbot
-                print("Aimbot ativado!")
-                OrionLib:MakeNotification({
-                    Name = "Aimbot",
-                    Content = "Aimbot ativado!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-        })
-
-        Section:AddButton({
-            Name = "Ativar ESP",
-            Callback = function()
-                -- Aqui você deve adicionar o código para ativar o ESP
-                print("ESP ativado!")
-                OrionLib:MakeNotification({
-                    Name = "ESP",
-                    Content = "ESP ativado!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-        })
-        
-        Section:AddButton({
-            Name = "Ativar Silent Aim",
-            Callback = function()
-                -- Aqui você deve adicionar o código para ativar o Silent Aim
-                print("Silent Aim ativado!")
-                OrionLib:MakeNotification({
-                    Name = "Silent Aim",
-                    Content = "Silent Aim ativado!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-        })
-        
-        Section:AddButton({
-            Name = "Ativar Wallhack",
-            Callback = function()
-                -- Aqui você deve adicionar o código para ativar o Wallhack
-                print("Wallhack ativado!")
-                OrionLib:MakeNotification({
-                    Name = "Wallhack",
-                    Content = "Wallhack ativado!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-        })
-        
-        -- Mostrar a janela
-        Window:Show()
-    else
-        TextBox.Text = ""
-        TextBox.PlaceholderText = "Key incorreta!"
     end
-end)
+})
+
+-- Criar a aba Scripts
+local TabScripts = Window:MakeTab({
+    Name = "Scripts",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Adicionar categoria de scripts com botões
+local Section = TabScripts:AddSection({
+    Name = "Ferramentas"
+})
+
+Section:AddButton({
+    Name = "Ativar Aimbot",
+    Callback = function()
+        -- Aqui você deve adicionar o código para ativar o Aimbot
+        print("Aimbot ativado!")
+        OrionLib:MakeNotification({
+            Name = "Aimbot",
+            Content = "Aimbot ativado!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar ESP",
+    Callback = function()
+        -- Aqui você deve adicionar o código para ativar o ESP
+        print("ESP ativado!")
+        OrionLib:MakeNotification({
+            Name = "ESP",
+            Content = "ESP ativado!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Silent Aim",
+    Callback = function()
+        -- Aqui você deve adicionar o código para ativar o Silent Aim
+        print("Silent Aim ativado!")
+        OrionLib:MakeNotification({
+            Name = "Silent Aim",
+            Content = "Silent Aim ativado!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end
+})
+
+Section:AddButton({
+    Name = "Ativar Wallhack",
+    Callback = function()
+        -- Aqui você deve adicionar o código para ativar o Wallhack
+        print("Wallhack ativado!")
+        OrionLib:MakeNotification({
+            Name = "Wallhack",
+            Content = "Wallhack ativado!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end
+})
+
+-- Mostrar a janela
+Window:Show()
