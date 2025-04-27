@@ -47,6 +47,7 @@ SubmitButton.TextScaled = true
 SubmitButton.MouseButton1Click:Connect(function()
     if TextBox.Text == key then
         KeyFrame.Visible = false
+        
         -- Criar a aba principal do menu
         local TabHome = Window:MakeTab({
             Name = "Home",
@@ -58,10 +59,15 @@ SubmitButton.MouseButton1Click:Connect(function()
         TabHome:AddButton({
             Name = "Bem-vindo ao Ceifador Hub!",
             Callback = function()
-                print("Bem-vindo ao Ceifador Hub V3!")
+                OrionLib:MakeNotification({
+                    Name = "Mensagem",
+                    Content = "Bem-vindo ao Ceifador Hub V3!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
             end
         })
-
+        
         -- Criar aba de Scripts
         local TabScripts = Window:MakeTab({
             Name = "Scripts",
@@ -69,7 +75,7 @@ SubmitButton.MouseButton1Click:Connect(function()
             PremiumOnly = false
         })
 
-        -- Adicionar categoria de Scripts
+        -- Adicionar categorias de Scripts
         local Section = TabScripts:AddSection({
             Name = "Ferramentas"
         })
@@ -79,6 +85,12 @@ SubmitButton.MouseButton1Click:Connect(function()
             Callback = function()
                 print("Aimbot ativado!")
                 -- Ação de ativar o Aimbot (substitua com seu código específico de Aimbot)
+                OrionLib:MakeNotification({
+                    Name = "Aimbot",
+                    Content = "Aimbot ativado!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
             end
         })
 
@@ -87,6 +99,12 @@ SubmitButton.MouseButton1Click:Connect(function()
             Callback = function()
                 print("ESP ativado!")
                 -- Ação de ativar o ESP (substitua com seu código específico de ESP)
+                OrionLib:MakeNotification({
+                    Name = "ESP",
+                    Content = "ESP ativado!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
             end
         })
 
@@ -95,6 +113,12 @@ SubmitButton.MouseButton1Click:Connect(function()
             Callback = function()
                 print("Silent Aim ativado!")
                 -- Ação de ativar o Silent Aim (substitua com seu código específico de Silent Aim)
+                OrionLib:MakeNotification({
+                    Name = "Silent Aim",
+                    Content = "Silent Aim ativado!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
             end
         })
 
@@ -103,6 +127,12 @@ SubmitButton.MouseButton1Click:Connect(function()
             Callback = function()
                 print("Wallhack ativado!")
                 -- Ação de ativar o Wallhack (substitua com seu código específico de Wallhack)
+                OrionLib:MakeNotification({
+                    Name = "Wallhack",
+                    Content = "Wallhack ativado!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
             end
         })
 
